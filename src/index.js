@@ -1,13 +1,20 @@
+import dotenv from 'dotenv';
 import {
     initMongoDBConnection
 } from './db/initMongoDBConnection.js';
-import {
-    setupServer
-} from './app.js';
+import express from 'express';
 
-const bootstrap = async () => {
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+const startServer = async () => {
     await initMongoDBConnection();
-    setupServer();
+
+    app.listen(PORT, () => {
+        console.log(`🚀 Server is running on port ${PORT}`);
+    });
 };
 
-bootstrap();
+startServer();
