@@ -19,7 +19,7 @@ app.use('/api/auth', authRouter);
 
 app.get('/', (req, res) => {
     res.json({
-        message: 'Podorozhnyky API is running 🚀'
+        message: 'Podorozhnyky API is running 🚀 '
     });
 });
 
@@ -30,7 +30,7 @@ const startServer = async () => {
             console.log(`Server is running on port ${PORT}`);
         });
     } catch (error) {
-        console.error('Failed to start server:', error);
+        console.error('Failed to start server 🌵 :', error);
     }
 };
 
