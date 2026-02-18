@@ -1,2 +1,19 @@
+# .env
 .env
-.env*
+
+
+# node_modules
+node_modules
+
+# dist  
+dist
+
+# logs
+logs
+
+# coverage
+coverage
+
+# .vscode
+.vscode
+
