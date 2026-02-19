@@ -1,3 +1,4 @@
+// src/routers/stories.js
 import { Router } from 'express';
 import {
   createStoryController,
@@ -16,15 +17,13 @@ import { createStorySchema, updateStorySchema } from '../validation/stories.js';
 const storiesRouter = Router();
 
 /**
- * ПУБЛІЧНІ МАРШРУТИ
- * Доступні всім користувачам, навіть неавторизованим.
- * Саме ці ендпоінти я буду використовувати на сторінці "Історії мандрівників".
+ * ПУБЛІЧНІ РОУТИ
+ * Оскільки в index.js ми підключили цей роутер як .use('/stories', ...),
+ * то тут ми використовуємо шлях '/', що в сумі дає GET /stories
  */
-
-// Отримання списку всіх історій (з підтримкою пагінації та фільтрації за категоріями)
 storiesRouter.get('/', ctrlWrapper(getStoriesController));
 
-// Отримання детальної інформації про одну конкретну історію за її ID
+// Шлях /:storyId в сумі дасть GET /stories/:storyId
 storiesRouter.get(
   '/:storyId',
   isValidId('storyId'),
@@ -32,13 +31,10 @@ storiesRouter.get(
 );
 
 /**
- * ПРИВАТНІ МАРШРУТИ
- * Усі маршрути, що розташовані нижче мідлвара authenticate, 
- * вимагають наявності валідного токена у заголовку запиту.
+ * ПРИВАТНІ РОУТИ (Потребують авторизації)
  */
 storiesRouter.use(authenticate);
 
-// Створення нової історії (обов'язково з додаванням зображення через multer)
 storiesRouter.post(
   '/',
   upload.single('storyImage'),
@@ -46,7 +42,6 @@ storiesRouter.post(
   ctrlWrapper(createStoryController),
 );
 
-// Часткове оновлення історії (доступно лише власнику історії)
 storiesRouter.patch(
   '/:storyId',
   isValidId('storyId'),
@@ -55,7 +50,6 @@ storiesRouter.patch(
   ctrlWrapper(updateStoryController),
 );
 
-// Видалення історії за її ID (доступно лише власнику історії)
 storiesRouter.delete(
   '/:storyId',
   isValidId('storyId'),
