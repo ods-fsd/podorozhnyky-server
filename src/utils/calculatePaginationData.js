@@ -1,15 +1,12 @@
-/**
- * Формує об'єкт мета-даних пагінації для фронтенду.
- */
-export const calculatePaginationData = (count, perPage, page) => {
-  const totalPages = Math.ceil(count / perPage);
-  const hasNextPage = Boolean(totalPages - page);
-  const hasPreviousPage = page !== 1;
+export const calculatePaginationData = (totalItems, perPage, page) => {
+  const totalPages = Math.ceil(totalItems / perPage);
+  const hasNextPage = totalPages > 0 && page < totalPages;
+  const hasPreviousPage = page > 1 && totalPages > 0 && page <= totalPages + 1;
 
   return {
     page,
     perPage,
-    totalItems: count,
+    totalItems,
     totalPages,
     hasNextPage,
     hasPreviousPage,
