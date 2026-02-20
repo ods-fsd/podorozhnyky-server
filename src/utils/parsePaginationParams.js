@@ -1,7 +1,3 @@
-/**
- * Функція для безпечного перетворення рядка з URL у число.
- * Використовується для сторінок (page) та кількості елементів (perPage).
- */
 const parseNumber = (number, defaultValue) => {
   const isString = typeof number === 'string';
   if (!isString) return defaultValue;

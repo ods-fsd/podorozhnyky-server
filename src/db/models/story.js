@@ -1,14 +1,50 @@
-import { model, Schema } from 'mongoose';
+// src/db/models/story.js
+import { Schema, model } from 'mongoose';
 
-const storiesSchema = new Schema(
+const storySchema = new Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    ownerId: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-    category: { type: Schema.Types.ObjectId, ref: 'categories' },
-    favoriteCount: { type: Number, default: 0 },
+    img: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      maxLength: 80, //
+    },
+    article: {
+      type: String,
+      required: true,
+      maxLength: 2500, //
+    },
+    shortDescription: {
+      type: String,
+      maxLength: 150,
+      required: false,
+    },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: 'categories',
+      required: true,
+    },
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      required: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    favoriteCount: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
-export const StoriesCollection = model('stories', storiesSchema);
+export const StoriesCollection = model('stories', storySchema);
