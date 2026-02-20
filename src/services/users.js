@@ -84,3 +84,45 @@ export const getAllUsersService = async ({
         ...paginationData,
     };
 };
+
+export const getUserByIdService = async (userId, {
+    page,
+    perPage
+}) => {
+    const skip = (page - 1) * perPage;
+
+    const user = await UsersCollection.findById(userId).select("name avatarUrl description email");
+
+    if (!user) {
+        return null;
+    }
+
+    const [storiesCount, paginatedStories] = await Promise.all([
+        StoriesCollection.countDocuments({
+            ownerId: userId
+        }),
+        StoriesCollection.find({
+            ownerId: userId
+        })
+        .skip(skip)
+        .limit(perPage)
+        .sort({
+            createdAt: -1
+        })
+        .populate([{
+            path: "category",
+            select: "_id name"
+        }])
+        .exec()
+    ]);
+
+    const paginationData = calculatePaginationData(storiesCount, perPage, page);
+
+    return {
+        user,
+        stories: {
+            data: paginatedStories,
+            ...paginationData
+        }
+    };
+};
