@@ -1,12 +1,12 @@
 import {
-    getUserCurrentService
-} from "../services/users.js";
-import {
-    getAllUsersService
+    getUserCurrentService,
+    getAllUsersService,
+    getUserByIdService
 } from "../services/users.js";
 import {
     parsePaginationParams
 } from "../utils/parsePaginationParams.js";
+import createHttpError from 'http-errors';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -137,4 +137,33 @@ export const getUsersController = async (req, res) => {
         message: "Successfully found users!",
         data: result,
     });
+};
+
+export const getUserByIdController = async (req, res, next) => {
+    try {
+        const {
+            userId
+        } = req.params;
+        const {
+            page,
+            perPage
+        } = parsePaginationParams(req.query);
+
+        const result = await getUserByIdService(userId, {
+            page,
+            perPage
+        });
+
+        if (!result) {
+            throw createHttpError(404, 'User not found');
+        }
+
+        res.status(200).json({
+            status: 200,
+            message: 'Successfully found user!',
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
