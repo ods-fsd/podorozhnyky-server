@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../db/models/user.js';
+import { UsersCollection } from '../db/models/user.js';
 
 const { JWT_SECRET } = process.env;
 
@@ -24,7 +24,7 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const user = await User.findById(payload.id);
+    const user = await UsersCollection.findById(payload.id);
 
     if (!user) {
       return res.status(401).json({ message: 'Not authorized' });
