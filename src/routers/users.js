@@ -1,8 +1,36 @@
-// src/routers/users.js
-import { Router } from 'express';
+import {
+    Router
+} from 'express';
 
-// Створюємо роутер, щоб уникнути помилки "usersRouter is not defined"
 const usersRouter = Router();
+
+import {
+    registerController,
+    loginController,
+    getCurrentUserController,
+    getUsersController,
+} from '../controllers/users.js';
+import {
+    validateBody
+} from '../middlewares/validateBody.js';
+import {
+    registerSchema,
+    loginSchema
+} from '../validation/auth.js';
+import {
+    authenticate
+} from '../middlewares/authenticate.js';
+import {
+    ctrlWrapper
+} from '../utils/ctrlWrapper.js';
+
+// ПУБЛІЧНІ МАРШРУТИ
+usersRouter.post('/register', validateBody(registerSchema), ctrlWrapper(registerController));
+usersRouter.post('/login', validateBody(loginSchema), ctrlWrapper(loginController));
+
+// ПРИВАТНІ МАРШРУТИ (захищені)
+// usersRouter.get('/me', authenticate, parsePagination, ctrlWrapper(getCurrentUserController));
+// usersRouter.get('/', authenticate, parsePagination, ctrlWrapper(getUsersController));
 
 /**
  * ==========================================
@@ -17,19 +45,15 @@ const usersRouter = Router();
 /*
 import {
   addFavoriteController,
-  getCurrentUserController,
   getUserByIdController,
-  getUsersController,
   removeFavoriteController,
   updateCurrentUserController,
   getCurrentUserStoriesController,
 } from '../controllers/users.js';
-import { authenticate } from '../middlewares/authenticate.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { upload } from '../middlewares/multer.js';
-import { validateBody } from '../middlewares/validateBody.js';
 import { parsePagination } from '../middlewares/parsePagination.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+
 import {
   updateUserFavoritesSchema,
   updateUserSchema,
