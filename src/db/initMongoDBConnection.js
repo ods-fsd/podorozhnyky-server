@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * Функція для ініціалізації підключення до MongoDB.
+ */
 export const initMongoDBConnection = async () => {
   try {
     const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } =
