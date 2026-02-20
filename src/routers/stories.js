@@ -6,6 +6,7 @@ import {
   getStoriesController,
   getStoryByIdController,
   updateStoryController,
+  getSavedStoriesController,
 } from '../controllers/stories.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { isValidId } from '../middlewares/isValidId.js';
@@ -23,6 +24,16 @@ const storiesRouter = Router();
  */
 storiesRouter.get('/', ctrlWrapper(getStoriesController));
 
+/**
+ * ПРИВАТНІ РОУТИ ЗІ СПЕЦИФІЧНИМИ ШЛЯХАМИ
+ * Мають стояти ДО динамічних шляхів типу /:storyId
+ */
+storiesRouter.get(
+  '/saved',
+  authenticate,
+  ctrlWrapper(getSavedStoriesController)
+);
+
 // Шлях /:storyId в сумі дасть GET /stories/:storyId
 storiesRouter.get(
   '/:storyId',
@@ -31,7 +42,7 @@ storiesRouter.get(
 );
 
 /**
- * ПРИВАТНІ РОУТИ (Потребують авторизації)
+ * ПРИВАТНІ РОУТИ (Потребують авторизації для всіх наступних методів)
  */
 storiesRouter.use(authenticate);
 

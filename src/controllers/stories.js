@@ -7,6 +7,7 @@ import {
 import {
     saveFileToCloudinary
 } from '../utils/saveFileToCloudinary.js';
+import { getSavedStories } from '../services/stories.js';
 import createHttpError from 'http-errors';
 
 // GET /stories  — public, all stories
@@ -42,6 +43,20 @@ export const getStoriesController = async (req, res) => {
             hasPreviousPage: page > 1,
             hasNextPage: page < totalPages,
         },
+    });
+};
+
+// GET /stories/saved — private, saved stories
+export const getSavedStoriesController = async (req, res) => {
+    const userId = req.user._id;
+    const { page, perPage } = parsePaginationParams(req.query);
+
+    const result = await getSavedStories(userId, page, perPage);
+
+    res.status(200).json({
+        status: 200,
+        message: 'Successfully found saved stories!',
+        data: result,
     });
 };
 
