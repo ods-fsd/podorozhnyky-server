@@ -1,206 +1,110 @@
+import createHttpError from "http-errors";
 import {
-    StoriesCollection
-} from '../models/story.js';
-import {
-    parsePaginationParams
-} from '../utils/parsePaginationParams.js';
-import {
-    saveFileToCloudinary
-} from '../utils/saveFileToCloudinary.js';
-import { getSavedStories } from '../services/stories.js';
-import createHttpError from 'http-errors';
+  getAllStories,
+  getStoryByIdService,
+  createStory,
+  updateStory,
+  deleteStoryByIdService,
+  toggleFavoriteService,
+  getSavedStories,
+} from "../services/stories.js";
+import { parsePaginationParams } from "../utils/parsePaginationParams.js";
 
-// GET /stories  — public, all stories
+// 1. ОТРИМАННЯ ВСІХ ІСТОРІЙ (Головна)
 export const getStoriesController = async (req, res) => {
-    const {
-        page,
-        perPage
-    } = parsePaginationParams(req.query);
-    const skip = (page - 1) * perPage;
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { category } = req.query;
 
-    const [stories, totalItems] = await Promise.all([
-        StoriesCollection.find()
-        .skip(skip)
-        .limit(perPage)
-        .sort({
-            createdAt: -1
-        })
-        .exec(),
-        StoriesCollection.countDocuments(),
-    ]);
+  const data = await getAllStories({
+    page,
+    perPage,
+    filter: { category },
+  });
 
-    const totalPages = Math.ceil(totalItems / perPage);
-
-    res.json({
-        status: 200,
-        message: 'Successfully found stories!',
-        data: {
-            data: stories,
-            page,
-            perPage,
-            totalItems,
-            totalPages,
-            hasPreviousPage: page > 1,
-            hasNextPage: page < totalPages,
-        },
-    });
+  res
+    .status(200)
+    .json({ status: 200, message: "Successfully found stories!", data });
 };
 
-// GET /stories/saved — private, saved stories
-export const getSavedStoriesController = async (req, res) => {
-    const userId = req.user._id;
-    const { page, perPage } = parsePaginationParams(req.query);
-
-    const result = await getSavedStories(userId, page, perPage);
-
-    res.status(200).json({
-        status: 200,
-        message: 'Successfully found saved stories!',
-        data: result,
-    });
-};
-
-// GET /stories/:storyId  — public, single story
-export const getStoryByIdController = async (req, res) => {
-    const {
-        storyId
-    } = req.params;
-    const story = await StoriesCollection.findById(storyId);
-
-    if (!story) {
-        throw createHttpError(404, 'Story not found');
-    }
-
-    res.json({
-        status: 200,
-        message: 'Successfully found story!',
-        data: story,
-    });
-};
-
-// POST /stories  — private
-export const createStoryController = async (req, res) => {
-    const {
-        _id: ownerId
-    } = req.user;
-
-    let img;
-    if (req.file) {
-        img = await saveFileToCloudinary(req.file);
-    } else {
-        throw createHttpError(400, 'Story image is required');
-    }
-
-    const story = await StoriesCollection.create({
-        ...req.body,
-        img,
-        ownerId,
-    });
-
-    res.status(201).json({
-        status: 201,
-        message: 'Story created successfully!',
-        data: story,
-    });
-};
-
-// PATCH /stories/:storyId  — private, owner only
-export const updateStoryController = async (req, res) => {
-    const {
-        storyId
-    } = req.params;
-    const {
-        _id: userId
-    } = req.user;
-
-    const story = await StoriesCollection.findOne({
-        _id: storyId,
-        ownerId: userId
-    });
-
-    if (!story) {
-        throw createHttpError(404, 'Story not found or access denied');
-    }
-
-    const update = {
-        ...req.body
-    };
-
-    if (req.file) {
-        update.img = await saveFileToCloudinary(req.file);
-    }
-
-    const updatedStory = await StoriesCollection.findByIdAndUpdate(storyId, update, {
-        new: true,
-    });
-
-    res.json({
-        status: 200,
-        message: 'Story updated successfully!',
-        data: updatedStory,
-    });
-};
-
-// DELETE /stories/:storyId  — private, owner only
-export const deleteStoryByIdController = async (req, res) => {
-    const {
-        storyId
-    } = req.params;
-    const {
-        _id: userId
-    } = req.user;
-
-    const story = await StoriesCollection.findOneAndDelete({
-        _id: storyId,
-        ownerId: userId,
-    });
-
-    if (!story) {
-        throw createHttpError(404, 'Story not found or access denied');
-    }
-
-    res.status(204).send();
-};
-
-// GET /stories/own  — private, own stories (kept for potential separate route)
+// 2. ТВОЇ ВЛАСНІ ІСТОРІЇ (Сторінка "Мої історії")
 export const getOwnStoriesController = async (req, res) => {
-    const {
-        _id: userId
-    } = req.user;
-    const {
-        page,
-        perPage
-    } = parsePaginationParams(req.query);
-    const skip = (page - 1) * perPage;
+  const { page, perPage } = parsePaginationParams(req.query);
 
-    const [stories, totalItems] = await Promise.all([
-        StoriesCollection.find({
-            ownerId: userId
-        })
-        .skip(skip)
-        .limit(perPage)
-        .sort({
-            createdAt: -1
-        })
-        .exec(),
-        StoriesCollection.countDocuments({
-            ownerId: userId
-        }),
-    ]);
+  const data = await getAllStories({
+    page,
+    perPage,
+    filter: { ownerId: req.user._id }, // Фільтр тільки для твоїх постів
+  });
 
-    const totalPages = Math.ceil(totalItems / perPage);
+  res
+    .status(200)
+    .json({ status: 200, message: "Successfully found your stories!", data });
+};
 
-    res.json({
-        status: 200,
-        message: 'Successfully found your stories!',
-        data: {
-            data: stories,
-            page,
-            perPage,
-            totalItems,
-            totalPages,
-            hasPreviousPage: page > 1,
-            hasNextPage: page < totalPages,
-        },
-    });
+// 3. ЗБЕРЕЖЕНІ ІСТОРІЇ (Сторінка "Збережене")
+export const getSavedStoriesController = async (req, res) => {
+  const { page, perPage } = parsePaginationParams(req.query);
+
+  const data = await getSavedStories(req.user._id, page, perPage);
+
+  res
+    .status(200)
+    .json({ status: 200, message: "Successfully found saved stories!", data });
+};
+
+// 4. КНОПКА-СЕРДЕЧКО (Додати/Видалити з обраного)
+export const toggleFavoriteController = async (req, res) => {
+  const { storyId } = req.params;
+  const result = await toggleFavoriteService(storyId, req.user._id);
+
+  res.json({
+    status: 200,
+    message: result.isFavorite
+      ? "Added to favorites"
+      : "Removed from favorites",
+    data: result,
+  });
+};
+
+// 5. ОДНА ІСТОРІЯ
+export const getStoryByIdController = async (req, res) => {
+  const { storyId } = req.params;
+  const story = await getStoryByIdService(storyId);
+
+  if (!story) throw createHttpError(404, "Story not found");
+
+  res.json({ status: 200, message: "Successfully found story!", data: story });
+};
+
+// 6. СТВОРЕННЯ ІСТОРІЇ
+export const createStoryController = async (req, res) => {
+  if (!req.file) throw createHttpError(400, "Story image is required");
+
+  const storyData = { ...req.body, ownerId: req.user._id };
+  const data = await createStory(storyData, req.file);
+
+  res
+    .status(201)
+    .json({ status: 201, message: "Story created successfully", data });
+};
+
+// 7. ОНОВЛЕННЯ ТА ВИДАЛЕННЯ
+export const updateStoryController = async (req, res) => {
+  const { storyId } = req.params;
+  const result = await updateStory(storyId, req.user._id, req.body);
+
+  if (!result) throw createHttpError(404, "Story not found or access denied");
+
+  res.json({
+    status: 200,
+    message: "Story updated successfully!",
+    data: result.story,
+  });
+};
+
+export const deleteStoryByIdController = async (req, res) => {
+  const { storyId } = req.params;
+  await deleteStoryByIdService(storyId, req.user._id);
+
+  res.status(204).send();
 };
