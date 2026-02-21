@@ -1,5 +1,4 @@
-// src/routers/stories.js
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createStoryController,
   deleteStoryByIdController,
@@ -7,63 +6,68 @@ import {
   getStoryByIdController,
   updateStoryController,
   getSavedStoriesController,
-} from '../controllers/stories.js';
-import { authenticate } from '../middlewares/authenticate.js';
-import { isValidId } from '../middlewares/isValidId.js';
-import { upload } from '../middlewares/multer.js';
-import { validateBody } from '../middlewares/validateBody.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { createStorySchema, updateStorySchema } from '../validation/stories.js';
+  getOwnStoriesController,
+  toggleFavoriteController,
+} from "../controllers/stories.js";
+import { authenticate } from "../middlewares/authenticate.js";
+import { isValidId } from "../middlewares/isValidId.js";
+import { upload } from "../middlewares/multer.js";
+import { validateBody } from "../middlewares/validateBody.js";
+import { ctrlWrapper } from "../utils/ctrlWrapper.js";
+import { createStorySchema, updateStorySchema } from "../validation/stories.js";
 
 const storiesRouter = Router();
 
-/**
- * ПУБЛІЧНІ РОУТИ
- * Оскільки в index.js ми підключили цей роутер як .use('/stories', ...),
- * то тут ми використовуємо шлях '/', що в сумі дає GET /stories
- */
-storiesRouter.get('/', ctrlWrapper(getStoriesController));
+// --- ПУБЛІЧНІ РОУТИ ---
 
-/**
- * ПРИВАТНІ РОУТИ ЗІ СПЕЦИФІЧНИМИ ШЛЯХАМИ
- * Мають стояти ДО динамічних шляхів типу /:storyId
- */
-storiesRouter.get(
-  '/saved',
-  authenticate,
-  ctrlWrapper(getSavedStoriesController)
-);
+// 1. Всі історії (Головна сторінка)
+storiesRouter.get("/", ctrlWrapper(getStoriesController));
 
-// Шлях /:storyId в сумі дасть GET /stories/:storyId
+// 2. Деталі однієї історії
 storiesRouter.get(
-  '/:storyId',
-  isValidId('storyId'),
+  "/:storyId",
+  isValidId("storyId"),
   ctrlWrapper(getStoryByIdController),
 );
 
-/**
- * ПРИВАТНІ РОУТИ (Потребують авторизації для всіх наступних методів)
- */
+// --- ПРИВАТНІ РОУТИ (Потрібна авторизація) ---
 storiesRouter.use(authenticate);
 
+// 3. Твої власні історії (Сторінка "Мої історії")
+// Має стояти ПЕРЕД /:storyId, щоб Express не переплутав 'own' з ID
+storiesRouter.get("/own", ctrlWrapper(getOwnStoriesController));
+
+// 4. Твої збережені історії (Сторінка "Збережене")
+storiesRouter.get("/saved", ctrlWrapper(getSavedStoriesController));
+
+// 5. Кнопка-сердечко (Додати/Видалити з обраного)
 storiesRouter.post(
-  '/',
-  upload.single('storyImage'),
+  "/:storyId/favorite",
+  isValidId("storyId"),
+  ctrlWrapper(toggleFavoriteController),
+);
+
+// 6. Створення нової історії
+storiesRouter.post(
+  "",
+  upload.single("storyImage"),
   validateBody(createStorySchema),
   ctrlWrapper(createStoryController),
 );
 
+// 7. Редагування (Тільки власник)
 storiesRouter.patch(
-  '/:storyId',
-  isValidId('storyId'),
-  upload.single('storyImage'),
+  "/:storyId",
+  isValidId("storyId"),
+  upload.single("storyImage"),
   validateBody(updateStorySchema),
   ctrlWrapper(updateStoryController),
 );
 
+// 8. Видалення (Тільки власник)
 storiesRouter.delete(
-  '/:storyId',
-  isValidId('storyId'),
+  "/:storyId",
+  isValidId("storyId"),
   ctrlWrapper(deleteStoryByIdController),
 );
 
