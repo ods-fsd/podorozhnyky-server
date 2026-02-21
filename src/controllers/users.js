@@ -1,7 +1,8 @@
 import {
     getUserCurrentService,
     getAllUsersService,
-    getUserByIdService
+    getUserByIdService,
+    addFavorite
 } from "../services/users.js";
 import {
     parsePaginationParams
@@ -166,4 +167,17 @@ export const getUserByIdController = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+export const addFavoriteController = async (req, res) => {
+  const userId = req.user;
+  const { storyId } = req.body;
+
+  const favorites = await addFavorite(userId, storyId);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Story added to favorites',
+    data: favorites,
+  });
 };
