@@ -122,3 +122,29 @@ export const updateUserCurrentService = async (userId, updateData) => {
     new: true,
   }).select("-favorites");
 };
+
+export const addFavorite = async (userId, storyId) => {
+  const story = await StoriesCollection.findById(storyId);
+
+  if (!story) {
+    throw createHttpError(404, 'Story not found');
+  }
+
+  const user = await UsersCollection.findById(userId);
+
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  if (user.favorites.includes(storyId)) {
+    throw createHttpError(409, 'Story already in favorites');
+  }
+
+  user.favorites.push(storyId);
+  await user.save();
+
+  story.favoriteCount += 1;
+  await story.save();
+
+  return user.favorites;
+};
