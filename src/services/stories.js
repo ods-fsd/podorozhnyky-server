@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 import { StoriesCollection } from "../models/story.js";
-import { UsersCollection } from "../models/user.js"; // Виправив назву моделі
+import { UsersCollection } from "../models/user.js";
 import { calculatePaginationData } from "../utils/calculatePaginationData.js";
 import { saveFileToCloudinary } from "../utils/saveFileToCloudinary.js";
 
@@ -17,12 +17,10 @@ export const getAllStories = async ({
 
   const storiesQuery = StoriesCollection.find();
 
-  // Фільтр за категорією
   if (filter.category) {
     storiesQuery.where("category").equals(filter.category);
   }
 
-  // ФІЧА ДЛЯ ТЗ: Фільтр за власником (для сторінки "Мої історії")
   if (filter.ownerId) {
     storiesQuery.where("ownerId").equals(filter.ownerId);
   }
@@ -30,7 +28,7 @@ export const getAllStories = async ({
   const [storiesCount, stories] = await Promise.all([
     StoriesCollection.find().merge(storiesQuery).countDocuments(),
     storiesQuery
-      .sort({ createdAt: -1 }) // Сортуємо: нові зверху
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate({ path: "ownerId", select: "name avatarUrl" })
@@ -51,7 +49,6 @@ export const getSavedStories = async (userId, page = 1, perPage = 10) => {
   const user = await UsersCollection.findById(userId);
   if (!user) throw createHttpError(404, "User not found");
 
-  // Використовуємо 'favorites', як ми домовлялися для бази
   const favoritesIds = user.favorites || [];
 
   if (favoritesIds.length === 0) {
