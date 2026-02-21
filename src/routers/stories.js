@@ -1,3 +1,17 @@
+<<<<<<< HEAD
+import { Router } from 'express';
+import { authenticate } from '../middlewares/authenticate.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { updateStoryController } from '../controllers/stories.js';
+import { updateStorySchema } from '../validation/stories.js';
+
+const storiesRouter = Router();
+
+storiesRouter.patch(
+  '/:storyId',
+  authenticate,
+=======
 import { Router } from "express";
 import {
   createStoryController,
@@ -60,10 +74,14 @@ storiesRouter.patch(
   "/:storyId",
   isValidId("storyId"),
   upload.single("storyImage"),
+>>>>>>> main
   validateBody(updateStorySchema),
   ctrlWrapper(updateStoryController),
 );
 
+<<<<<<< HEAD
+export default storiesRouter;
+=======
 // 8. Видалення (Тільки власник)
 storiesRouter.delete(
   "/:storyId",
@@ -72,3 +90,4 @@ storiesRouter.delete(
 );
 
 export default storiesRouter;
+>>>>>>> main
