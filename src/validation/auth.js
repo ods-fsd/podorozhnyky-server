@@ -1,0 +1,39 @@
+import Joi from "joi";
+
+// Реєстрація (твоя логіка + імена з мейну)
+export const registerSchema = Joi.object({
+  name: Joi.string().min(3).max(32).required().messages({
+    "string.min": "Name should have a minimum length of 3",
+    "string.max": "Name should have a maximum length of 32",
+    "any.required": "Name is required",
+  }),
+  email: Joi.string().email().max(64).required().messages({
+    "string.email": "Email must be a valid email address",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string().min(8).max(128).required().messages({
+    "string.min": "Password should have a minimum length of 8",
+    "any.required": "Password is required",
+  }),
+});
+
+// Логін (твоя логіка + імена з мейну)
+export const loginSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Email must be a valid email address",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string().required().messages({
+    "any.required": "Password is required",
+  }),
+});
+
+// Інші схеми (про всяк випадок, якщо знадобляться пізніше)
+export const requestResetEmailSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+  password: Joi.string().required(),
+  token: Joi.string().required(),
+});
