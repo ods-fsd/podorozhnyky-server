@@ -1,14 +1,12 @@
 import {
-    Router
-} from "express";
-import {
-    registerController,
-    loginController,
-    getUsersController,
-    getCurrentUserController,
-    getCurrentUserStoriesController,
-    getUserByIdController,
-    updateCurrentUserController,
+  registerController,
+  loginController,
+  getUsersController,
+  getCurrentUserController,
+  getCurrentUserStoriesController,
+  getUserByIdController,
+  updateCurrentUserController,
+  updateAvatarController,
 } from "../controllers/users.js";
 
 import {
@@ -54,6 +52,12 @@ usersRouter.get("/", ctrlWrapper(getUsersController));
 
 // --- ПРОФІЛЬ (Приватні - потрібен токен) ---
 usersRouter.use(authenticate);
+usersRouter.patch(
+  "/avatar",
+  upload.single("avatar"),
+  ctrlWrapper(updateAvatarController),
+);
+
 
 // 1. Мої збережені (Вкладка "Saved")
 usersRouter.get("/current", ctrlWrapper(getCurrentUserController));
