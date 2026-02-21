@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-export const validateBody = (schema) => {
-  return (req, res, next) => {
-    const { error, value } = schema.validate(req.body, {
-      abortEarly: true,
-      stripUnknown: true,
-    });
-
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-
-    req.body = value;
-    next();
-  };
-=======
 import createHttpError from 'http-errors';
 
 /**
@@ -22,19 +6,18 @@ import createHttpError from 'http-errors';
  * @param {Object} schema - Joi схема для валідації
  */
 export const validateBody = (schema) => async (req, res, next) => {
-  try {
-    // Виконуємо валідацію. abortEarly: false дозволяє побачити всі помилки відразу, а не тільки першу.
-    await schema.validateAsync(req.body, {
-      abortEarly: false,
-    });
-    // Якщо дані валідні — йдемо далі
-    next();
-  } catch (err) {
-    // Якщо дані невірні — формуємо помилку 400 (Bad Request)
-    const error = createHttpError(400, 'Bad Request', {
-      errors: err.details,
-    });
-    next(error);
-  }
->>>>>>> main
+    try {
+        // Виконуємо валідацію. abortEarly: false дозволяє побачити всі помилки відразу, а не тільки першу.
+        await schema.validateAsync(req.body, {
+            abortEarly: false,
+        });
+        // Якщо дані валідні — йдемо далі
+        next();
+    } catch (err) {
+        // Якщо дані невірні — формуємо помилку 400 (Bad Request)
+        const error = createHttpError(400, 'Bad Request', {
+            errors: err.details,
+        });
+        next(error);
+    }
 };

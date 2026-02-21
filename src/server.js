@@ -18,7 +18,6 @@ import {
 import {
     swaggerDocs
 } from './middlewares/swaggerDocs.js';
-import usersRouter from './routers/users.js';
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
@@ -49,8 +48,7 @@ export const setupServer = () => {
         });
     });
 
-    app.use('/api/users', usersRouter);
-    app.use(router);
+    app.use('/api', router);
     app.use(notFoundHandler);
     app.use(errorHandler);
 
