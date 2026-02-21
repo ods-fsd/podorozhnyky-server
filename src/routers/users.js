@@ -7,6 +7,7 @@ import {
   getCurrentUserStoriesController,
   getUserByIdController,
   updateCurrentUserController,
+  updateAvatarController,
 } from "../controllers/users.js";
 
 import { authenticate } from "../middlewares/authenticate.js";
@@ -37,6 +38,12 @@ usersRouter.get("/", ctrlWrapper(getUsersController));
 
 // --- ПРОФІЛЬ (Приватні - потрібен токен) ---
 usersRouter.use(authenticate);
+usersRouter.patch(
+  "/avatar",
+  upload.single("avatar"),
+  ctrlWrapper(updateAvatarController),
+);
+
 
 // 1. Мої збережені (Вкладка "Saved")
 usersRouter.get("/current", ctrlWrapper(getCurrentUserController));

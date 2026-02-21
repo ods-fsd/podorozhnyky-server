@@ -153,3 +153,29 @@ export const updateCurrentUserController = async (req, res) => {
     data: updatedUser,
   });
 };
+
+
+
+export const logoutController = async (req, res) => {
+  res.status(204).send();
+}; 
+
+export const updateAvatarController = async (req, res) => {
+  const userId = req.user._id;
+
+  if (!req.file) {
+    throw createHttpError(400, "Avatar file is required");
+  }
+
+  const avatarUrl = await saveFileToCloudinary(req.file);
+
+  const updatedUser = await updateUserCurrentService(userId, {
+    avatarUrl,
+  });
+
+  res.status(200).json({
+    status: 200,
+    message: "Avatar updated successfully",
+    data: updatedUser,
+  });
+};
