@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import {
     User
 } from '../models/user.js';
+import { logoutUser } from '../services/auth.js';
 
 export const register = async (req, res) => {
     const {
@@ -62,4 +63,18 @@ export const login = async (req, res) => {
             email: user.email
         }
     });
+};
+
+export const logoutController = async (req, res) => {
+  const { sessionId } = req.cookies;
+
+  if (sessionId) {
+    await logoutUser(sessionId);
+  }
+
+  res.clearCookie('sessionId');
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+
+  res.status(204).send();
 };
