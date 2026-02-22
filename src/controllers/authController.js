@@ -1,9 +1,11 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {
-    User
+    UsersCollection
 } from '../models/user.js';
-import { logoutUser } from '../services/auth.js';
+import {
+    logoutUser
+} from '../services/auth.js';
 
 export const register = async (req, res) => {
     const {
@@ -12,7 +14,7 @@ export const register = async (req, res) => {
         password
     } = req.body;
 
-    const existingUser = await User.findOne({
+    const existingUser = await UsersCollection.findOne({
         email
     });
     if (existingUser) return res.status(409).json({
@@ -21,7 +23,7 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const newUser = await UsersCollection.create({
         name,
         email,
         password: hashedPassword
@@ -40,7 +42,7 @@ export const login = async (req, res) => {
         email,
         password
     } = req.body;
-    const user = await User.findOne({
+    const user = await UsersCollection.findOne({
         email
     });
 
@@ -66,10 +68,12 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-    const { sessionId } = req.cookies;
+    const {
+        sessionId
+    } = req.cookies;
 
     if (sessionId) {
-      await logoutUser(sessionId);
+        await logoutUser(sessionId);
     }
 
     res.clearCookie('sessionId');
