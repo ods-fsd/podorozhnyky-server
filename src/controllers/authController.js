@@ -65,16 +65,16 @@ export const login = async (req, res) => {
     });
 };
 
-export const logoutController = async (req, res) => {
-  const { sessionId } = req.cookies;
+export const logout = async (req, res) => {
+    const { sessionId } = req.cookies;
 
-  if (sessionId) {
-    await logoutUser(sessionId);
-  }
+    if (sessionId) {
+      await logoutUser(sessionId);
+    }
 
-  res.clearCookie('sessionId');
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+    res.clearCookie('sessionId');
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
 
-  res.status(204).send();
+    res.status(204).send();
 };
