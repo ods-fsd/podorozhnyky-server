@@ -8,6 +8,8 @@ import {
   getUserCurrentStoriesService,
   getUserByIdService,
   updateUserCurrentService,
+  addFavorite,
+  removeArticle,
 } from "../services/users.js";
 
 import { UsersCollection } from "../models/user.js";
@@ -154,11 +156,37 @@ export const updateCurrentUserController = async (req, res) => {
   });
 };
 
+export const addFavoriteController = async (req, res) => {
+  const userId = req.user.id;
+  const storyId = req.body.storyId;
 
+  const favorites = await addFavorite(userId, storyId);
+  res.status(200).json({
+    status: 200,
+    message: "Story successfully added to favorites",
+    data: {
+      favorites,
+    },
+  });
+};
+
+export const removeFavoriteController = async (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.user.id;
+
+  const favorites = await removeArticle(userId, storyId);
+  res.status(200).json({
+    status: 200,
+    message: "Removed from favorites",
+    data: {
+      favorites,
+    },
+  });
+};
 
 export const logoutController = async (req, res) => {
   res.status(204).send();
-}; 
+};
 
 export const updateAvatarController = async (req, res) => {
   const userId = req.user._id;
