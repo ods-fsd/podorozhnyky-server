@@ -11,6 +11,7 @@ import {
     getUserByIdController,
     updateCurrentUserController,
     updateAvatarController,
+    addFavoriteController,
 } from "../controllers/users.js";
 
 import {
@@ -65,6 +66,12 @@ usersRouter.patch(
 
 // 1. Мої збережені (Вкладка "Saved")
 usersRouter.get("/current", ctrlWrapper(getCurrentUserController));
+
+usersRouter.post(
+  "/favorites/:storyId",
+  isValidId("storyId"),
+  ctrlWrapper(addFavoriteController),
+);
 
 // 2. Мої власні історії (Вкладка "My Stories")
 usersRouter.get(

@@ -4,8 +4,8 @@ import {
   registerController,
   loginController,
   getCurrentUserController,
-  logoutController,
 } from "../controllers/users.js";
+import {logout} from "../controllers/authController.js"
 
 import { authenticate } from "../middlewares/authenticate.js";
 import { validateBody } from "../middlewares/validateBody.js";
@@ -40,7 +40,7 @@ router.get(
 router.post(
   "/logout",
   authenticate,
-  ctrlWrapper(logoutController)
+  ctrlWrapper(logout)
 );
 
 export default router;
