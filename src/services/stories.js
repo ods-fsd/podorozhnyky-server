@@ -6,6 +6,9 @@ import {
     UsersCollection
 } from "../models/user.js";
 import {
+    CategoriesCollection
+} from "../models/category.js";
+import {
     calculatePaginationData
 } from "../utils/calculatePaginationData.js";
 import {
