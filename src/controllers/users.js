@@ -99,24 +99,24 @@ export const loginController = async (req, res) => {
         refreshTokenValidUntil,
     });
 
-    res.cookie('sessionId', session._id.toString(), {
+    const cookieOptions = {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
+    };
+
+    res.cookie('sessionId', session._id.toString(), {
+        ...cookieOptions,
         expires: refreshTokenValidUntil,
     });
 
     res.cookie('accessToken', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        ...cookieOptions,
         expires: accessTokenValidUntil,
     });
 
     res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        ...cookieOptions,
         expires: refreshTokenValidUntil,
     });
 
