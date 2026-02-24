@@ -1,6 +1,7 @@
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 import {
     getAllUsersService,
@@ -15,6 +16,9 @@ import {
 import {
     UsersCollection
 } from "../models/user.js";
+import {
+    SessionsCollection
+} from "../models/session.js";
 import {
     parsePaginationParams
 } from "../utils/parsePaginationParams.js";
@@ -83,6 +87,39 @@ export const loginController = async (req, res) => {
         expiresIn: "24h"
     });
 
+    const refreshToken = crypto.randomBytes(30).toString('base64');
+    const accessTokenValidUntil = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const refreshTokenValidUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const session = await SessionsCollection.create({
+        userId: user._id,
+        accessToken: token,
+        refreshToken,
+        accessTokenValidUntil,
+        refreshTokenValidUntil,
+    });
+
+    res.cookie('sessionId', session._id.toString(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        expires: refreshTokenValidUntil,
+    });
+
+    res.cookie('accessToken', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        expires: accessTokenValidUntil,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        expires: refreshTokenValidUntil,
+    });
+
     res.status(200).json({
         status: 200,
         message: "Successfully logged in!",
@@ -96,7 +133,7 @@ export const loginController = async (req, res) => {
     });
 };
 
-// --- ТВОЄ ТЗ: МАНДРІВНИКИ ТА ПРОФІЛЬ ---
+//  МАНДРІВНИКИ ТА ПРОФІЛЬ
 
 // 1. Всі мандрівники (Сторінка "Travelers")
 export const getUsersController = async (req, res) => {
@@ -167,8 +204,7 @@ export const getCurrentUserStoriesController = async (req, res) => {
     res.status(200).json({
         status: 200,
         message: totalItems === 0 ?
-            "You haven't created any stories yet." :
-            "Stories retrieved successfully.",
+            "You haven't created any stories yet." : "Stories retrieved successfully.",
         data: {
             user,
             pagination
