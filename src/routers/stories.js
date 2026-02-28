@@ -12,6 +12,9 @@ import {
     toggleFavoriteController,
 } from "../controllers/stories.js";
 import {
+    removeFavoriteController,
+} from "../controllers/users.js";
+import {
     authenticate
 } from "../middlewares/authenticate.js";
 import {
@@ -38,6 +41,13 @@ const storiesRouter = Router();
 // 1. Всі історії (Головна сторінка)
 storiesRouter.get("/", ctrlWrapper(getStoriesController));
 
+// 3. Твої власні історії (Сторінка "Мої історії")
+// Має стояти ПЕРЕД /:storyId, щоб Express не переплутав 'own' з ID
+storiesRouter.get("/own", authenticate, ctrlWrapper(getOwnStoriesController));
+
+// 4. Твої збережені історії (Сторінка "Збережене")
+storiesRouter.get("/saved", authenticate, ctrlWrapper(getSavedStoriesController));
+
 // 2. Деталі однієї історії
 storiesRouter.get(
     "/:storyId",
@@ -48,18 +58,18 @@ storiesRouter.get(
 // --- ПРИВАТНІ РОУТИ (Потрібна авторизація) ---
 storiesRouter.use(authenticate);
 
-// 3. Твої власні історії (Сторінка "Мої історії")
-// Має стояти ПЕРЕД /:storyId, щоб Express не переплутав 'own' з ID
-storiesRouter.get("/own", ctrlWrapper(getOwnStoriesController));
-
-// 4. Твої збережені історії (Сторінка "Збережене")
-storiesRouter.get("/saved", ctrlWrapper(getSavedStoriesController));
-
 // 5. Кнопка-сердечко (Додати/Видалити з обраного)
 storiesRouter.post(
     "/:storyId/favorite",
     isValidId("storyId"),
     ctrlWrapper(toggleFavoriteController),
+);
+
+// Видалення з обраного
+storiesRouter.delete(
+    "/:storyId/favorite",
+    isValidId("storyId"),
+    ctrlWrapper(removeFavoriteController),
 );
 
 // 6. Створення нової історії
