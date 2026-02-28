@@ -1,18 +1,11 @@
 import {
     Router
 } from "express";
-
 import {
-    registerController,
-    loginController,
     getUsersController,
-    getCurrentUserController,
-    getCurrentUserStoriesController,
     getUserByIdController,
     updateCurrentUserController,
     updateAvatarController,
-    addFavoriteController,
-    removeFavoriteController,
 } from "../controllers/users.js";
 
 import {
@@ -31,27 +24,10 @@ import {
     ctrlWrapper
 } from "../utils/ctrlWrapper.js";
 import {
-    registerSchema,
-    loginSchema
-} from "../validation/auth.js";
-import {
     updateUserSchema,
-    updateUserFavoritesSchema,
 } from "../validation/users.js";
 
 const usersRouter = Router();
-
-// --- АВТОРИЗАЦІЯ (Публічні) ---
-usersRouter.post(
-    "/register",
-    validateBody(registerSchema),
-    ctrlWrapper(registerController),
-);
-usersRouter.post(
-    "/login",
-    validateBody(loginSchema),
-    ctrlWrapper(loginController),
-);
 
 // --- МАНДРІВНИКИ (Публічні) ---
 // Отримати всіх користувачів (для сторінки Travelers)
@@ -65,21 +41,6 @@ usersRouter.patch(
     ctrlWrapper(updateAvatarController),
 );
 
-// 1. Мої збережені (Вкладка "Saved")
-usersRouter.get("/current", ctrlWrapper(getCurrentUserController));
-
-usersRouter.post(
-    "/favorites/:storyId",
-    isValidId("storyId"),
-    ctrlWrapper(addFavoriteController),
-);
-
-// 2. Мої власні історії (Вкладка "My Stories")
-usersRouter.get(
-    "/current/stories",
-    ctrlWrapper(getCurrentUserStoriesController),
-);
-
 // 3. Редагування профілю (Ім'я, опис, аватар)
 usersRouter.patch(
     "/current",
@@ -88,22 +49,7 @@ usersRouter.patch(
     ctrlWrapper(updateCurrentUserController),
 );
 
-// Додавання статті до збережених
-usersRouter.post(
-    "/current/favorites",
-    validateBody(updateUserFavoritesSchema),
-    ctrlWrapper(addFavoriteController),
-);
-
-// Видалення статті зі збережених
-usersRouter.delete(
-    "/current/favorites/:storyId",
-    isValidId("storyId"),
-    ctrlWrapper(removeFavoriteController),
-);
-
 // --- ПУБЛІЧНИЙ ПРОФІЛЬ (За ID) ---
-// Має бути в самому кінці!
 usersRouter.get(
     "/:userId",
     isValidId("userId"),
