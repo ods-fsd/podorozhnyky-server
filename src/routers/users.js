@@ -33,6 +33,13 @@ const usersRouter = Router();
 // Отримати всіх користувачів (для сторінки Travelers)
 usersRouter.get("/", ctrlWrapper(getUsersController));
 
+// --- ПУБЛІЧНИЙ ПРОФІЛЬ (За ID) ---
+usersRouter.get(
+    "/:userId",
+    isValidId("userId"),
+    ctrlWrapper(getUserByIdController),
+);
+
 // --- ПРОФІЛЬ (Приватні - потрібен токен) ---
 usersRouter.use(authenticate);
 usersRouter.patch(
@@ -49,11 +56,6 @@ usersRouter.patch(
     ctrlWrapper(updateCurrentUserController),
 );
 
-// --- ПУБЛІЧНИЙ ПРОФІЛЬ (За ID) ---
-usersRouter.get(
-    "/:userId",
-    isValidId("userId"),
-    ctrlWrapper(getUserByIdController),
-);
+
 
 export default usersRouter;
