@@ -6,6 +6,18 @@ import {
 import {
     logoutUser
 } from '../services/auth.js';
+import {
+    sendEmail
+} from '../utils/sendMail.js';
+import {
+    OAuth2Client
+} from 'google-auth-library';
+
+const googleClient = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+);
 
 export const register = async (req, res) => {
     const {
@@ -165,6 +177,10 @@ export const confirmGoogleAuth = async (req, res) => {
     }
 };
 
+import fs from 'fs/promises';
+import path from 'path';
+import handlebars from 'handlebars';
+
 export const requestResetEmail = async (req, res) => {
     const {
         email
@@ -178,7 +194,7 @@ export const requestResetEmail = async (req, res) => {
     });
 
     const token = jwt.sign({
-        n
+        id: user._id
     }, process.env.JWT_SECRET, {
         expiresIn: '15m'
     });
@@ -186,7 +202,21 @@ export const requestResetEmail = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    await sendEmail(email, 'Reset Password', `Click the link to reset your password: http://localhost:3000/reset-password/${token}`);
+    const resetLink = `${process.env.APP_DOMAIN || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+
+    const templatePath = path.resolve('src/templates/resetPassword.hbs');
+    const templateSource = await fs.readFile(templatePath, 'utf-8');
+    const template = handlebars.compile(templateSource);
+    const html = template({
+        name: user.name,
+        resetLink
+    });
+
+    await sendEmail({
+        to: email,
+        subject: 'Відновлення пароля - Podorozhnyky',
+        html
+    });
 
     res.status(200).json({
         message: "Reset email sent"
