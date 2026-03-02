@@ -6,6 +6,9 @@ import {
 import {
     logoutUser
 } from '../services/auth.js';
+import {
+    sendEmail
+} from '../utils/sendMail.js';
 
 export const register = async (req, res) => {
     const {
@@ -172,7 +175,7 @@ export const requestResetEmail = async (req, res) => {
     });
 
     const token = jwt.sign({
-        n
+        id: user._id
     }, process.env.JWT_SECRET, {
         expiresIn: '15m'
     });
@@ -180,7 +183,11 @@ export const requestResetEmail = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    await sendEmail(email, 'Reset Password', `Click the link to reset your password: http://localhost:3000/reset-password/${token}`);
+    await sendEmail({
+        to: email,
+        subject: 'Reset Password',
+        html: `<p>Click the link to reset your password: <a href="http://localhost:3000/auth/reset-password?token=${token}">Reset Password</a></p>`
+    });
 
     res.status(200).json({
         message: "Reset email sent"
