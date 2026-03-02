@@ -15,16 +15,29 @@ import {
 import {
     validateBody
 } from "../middlewares/validateBody.js";
+
 import {
     registerSchema,
-    loginSchema
+    loginSchema,
+    googleConfirmSchema,
+    requestResetEmailSchema,
+    resetPasswordSchema
 } from "../validation/auth.js";
 import {
     ctrlWrapper
 } from "../utils/ctrlWrapper.js";
+import {
+    getGoogleOAuthUrl,
+    confirmGoogleAuth,
+    requestResetEmail,
+    resetPassword
+} from '../controllers/authController.js';
+
 
 const router = express.Router();
 
+router.get('/google-url', getGoogleOAuthUrl);
+router.post('/google-confirm', validateBody(googleConfirmSchema), confirmGoogleAuth);
 
 
 router.post(
@@ -47,6 +60,18 @@ router.get(
     ctrlWrapper(getCurrentUserController)
 );
 
+
+router.post(
+    "/send-reset-email",
+    validateBody(requestResetEmailSchema),
+    ctrlWrapper(requestResetEmail)
+);
+
+router.post(
+    "/reset-pwd",
+    validateBody(resetPasswordSchema),
+    ctrlWrapper(resetPassword)
+);
 
 router.post(
     "/logout",
