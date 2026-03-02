@@ -33,6 +33,14 @@ const usersSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'stories',
     }, ],
+    resetPasswordToken: {
+        type: String,
+        default: null,
+    },
+    resetPasswordExpires: {
+        type: Number,
+        default: null,
+    },
 }, {
     timestamps: true,
     versionKey: false,
