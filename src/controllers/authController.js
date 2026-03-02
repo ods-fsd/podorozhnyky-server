@@ -182,45 +182,53 @@ import path from 'path';
 import handlebars from 'handlebars';
 
 export const requestResetEmail = async (req, res) => {
-    const {
-        email
-    } = req.body;
+    try {
+        const {
+            email
+        } = req.body;
 
-    const user = await UsersCollection.findOne({
-        email
-    });
-    if (!user) return res.status(404).json({
-        message: "User not found"
-    });
+        const user = await UsersCollection.findOne({
+            email
+        });
+        if (!user) return res.status(404).json({
+            message: "User not found"
+        });
 
-    const token = jwt.sign({
-        id: user._id
-    }, process.env.JWT_SECRET, {
-        expiresIn: '15m'
-    });
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
-    await user.save();
+        const token = jwt.sign({
+            id: user._id
+        }, process.env.JWT_SECRET, {
+            expiresIn: '15m'
+        });
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+        await user.save();
 
-    const resetLink = `${process.env.APP_DOMAIN || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+        const resetLink = `${process.env.APP_DOMAIN || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
 
-    const templatePath = path.resolve('src/templates/resetPassword.hbs');
-    const templateSource = await fs.readFile(templatePath, 'utf-8');
-    const template = handlebars.compile(templateSource);
-    const html = template({
-        name: user.name,
-        resetLink
-    });
+        const templatePath = path.join(process.cwd(), 'src', 'templates', 'resetPassword.hbs');
+        const templateSource = await fs.readFile(templatePath, 'utf-8');
+        const template = handlebars.compile(templateSource);
+        const html = template({
+            name: user.name,
+            resetLink
+        });
 
-    await sendEmail({
-        to: email,
-        subject: 'Відновлення пароля - Podorozhnyky',
-        html
-    });
+        await sendEmail({
+            to: email,
+            subject: 'Відновлення пароля - Podorozhnyky',
+            html
+        });
 
-    res.status(200).json({
-        message: "Reset email sent"
-    });
+        res.status(200).json({
+            message: "Reset email sent"
+        });
+    } catch (error) {
+        console.error("DEBUG:", error);
+        res.status(500).json({
+            message: error.message,
+            stack: error.stack
+        });
+    }
 };
 
 export const resetPassword = async (req, res) => {
