@@ -140,10 +140,15 @@ export const getUserByIdService = async (
         })
         .skip((page - 1) * perPage)
         .limit(perPage)
-        .populate({
-            path: "category",
-            select: "name"
-        })
+        .populate([{
+                path: "ownerId",
+                select: "name avatarUrl"
+            },
+            {
+                path: "category",
+                select: "name"
+            }
+        ])
         .lean(),
         StoriesCollection.countDocuments(filter),
     ]);
