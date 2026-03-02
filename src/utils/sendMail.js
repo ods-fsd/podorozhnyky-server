@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport(config);
 export const sendEmail = async (data) => {
     const email = {
         ...data,
-        from: `Podorozhnyky <${process.env.SMTP_USER}>`
+        from: `Podorozhnyky <${process.env.SMTP_FROM}>`
     };
     await transporter.sendMail(email);
     return true;
