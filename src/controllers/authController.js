@@ -4,6 +4,9 @@ import {
     UsersCollection
 } from '../models/user.js';
 import {
+    SessionsCollection
+} from '../models/session.js';
+import {
     logoutUser
 } from '../services/auth.js';
 import {
@@ -12,6 +15,9 @@ import {
 import {
     OAuth2Client
 } from 'google-auth-library';
+import {
+    randomBytes
+} from 'crypto';
 
 const googleClient = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
@@ -149,13 +155,13 @@ export const confirmGoogleAuth = async (req, res) => {
         });
 
         if (!user) {
+            const randomPassword = randomBytes(16).toString('hex');
+
             user = await UsersCollection.create({
-                name: given_name.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ]/g, '').padEnd(2, 'a'),
-                surname: family_name ? family_name.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ]/g, '') : 'User',
+                name: (given_name || 'User').replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ]/g, '').padEnd(3, 'a').substring(0, 32),
                 email,
-                password: '',
-                avatar: picture,
-                isVerified: true,
+                password: randomPassword,
+                avatarUrl: picture,
             });
         }
 
@@ -163,6 +169,39 @@ export const confirmGoogleAuth = async (req, res) => {
             id: user._id
         }, process.env.JWT_SECRET, {
             expiresIn: '24h'
+        });
+
+        const refreshToken = randomBytes(30).toString('base64');
+        const accessTokenValidUntil = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const refreshTokenValidUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const session = await SessionsCollection.create({
+            userId: user._id,
+            accessToken: token,
+            refreshToken,
+            accessTokenValidUntil,
+            refreshTokenValidUntil,
+        });
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+        };
+
+        res.cookie('sessionId', session._id.toString(), {
+            ...cookieOptions,
+            expires: refreshTokenValidUntil,
+        });
+
+        res.cookie('accessToken', token, {
+            ...cookieOptions,
+            expires: accessTokenValidUntil,
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            ...cookieOptions,
+            expires: refreshTokenValidUntil,
         });
 
         res.status(200).json({
