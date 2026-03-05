@@ -1,6 +1,5 @@
 import Joi from "joi";
 
-// Реєстрація (твоя логіка + імена з мейну)
 export const registerSchema = Joi.object({
     name: Joi.string().min(3).max(32).required().messages({
         "string.min": "Name should have a minimum length of 3",
@@ -17,7 +16,6 @@ export const registerSchema = Joi.object({
     }),
 });
 
-// Логін (твоя логіка + імена з мейну)
 export const loginSchema = Joi.object({
     email: Joi.string().email().required().messages({
         "string.email": "Email must be a valid email address",
@@ -28,7 +26,6 @@ export const loginSchema = Joi.object({
     }),
 });
 
-// Інші схеми (про всяк випадок, якщо знадобляться пізніше)
 export const googleConfirmSchema = Joi.object({
     code: Joi.string().required().messages({
         "any.required": "Code is required",
