@@ -1,20 +1,140 @@
 {
-    "openapi": "3.0.0",
+    "openapi": "3.1.0",
     "info": {
         "title": "Podorozhnyky API",
         "version": "1.0.0",
-        "description": "API documentation for the Podorozhnyky project."
+        "description": "API documentation for the Podorozhnyky application."
     },
     "servers": [{
-        "url": "http://localhost:3000",
-        "description": "Development server"
+            "url": "http://localhost:5000",
+            "description": "Local server"
+        },
+        {
+            "url": "https://podorozhnyky-server.onrender.com",
+            "description": "Production server"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "sessionId"
+            }
+        },
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "avatarUrl": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "followers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "following": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "favorites": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "Story": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "article": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "shortDescription": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "storyImage": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Category": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "security": [{
+        "bearerAuth": [],
+        "cookieAuth": []
     }],
+    "tags": [{
+            "name": "Auth",
+            "description": "Authentication endpoints"
+        },
+        {
+            "name": "Users",
+            "description": "User operations"
+        },
+        {
+            "name": "Stories",
+            "description": "Story operations"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories operations"
+        }
+    ],
     "paths": {
-        "/api/users/register": {
+        "/api/auth/register": {
             "post": {
-                "summary": "Register a new user",
-                "description": "Public endpoint to register a new user.",
                 "tags": ["Auth"],
+                "summary": "Register a new user",
+                "security": [],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -23,20 +143,13 @@
                                 "type": "object",
                                 "properties": {
                                     "name": {
-                                        "type": "string",
-                                        "maxLength": 32,
-                                        "example": "John Doe"
+                                        "type": "string"
                                     },
                                     "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "johndoe@example.com"
+                                        "type": "string"
                                     },
                                     "password": {
-                                        "type": "string",
-                                        "minLength": 8,
-                                        "maxLength": 128,
-                                        "example": "securePassword123"
+                                        "type": "string"
                                     }
                                 },
                                 "required": ["name", "email", "password"]
@@ -46,39 +159,16 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "User created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "user": {
-                                            "type": "object",
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string"
-                                                },
-                                                "email": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "Email in use"
+                        "description": "Registered successfully"
                     }
                 }
             }
         },
-        "/api/users/login": {
+        "/api/auth/login": {
             "post": {
-                "summary": "Login a user",
-                "description": "Public endpoint to login an existing user.",
                 "tags": ["Auth"],
+                "summary": "Login user",
+                "security": [],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -87,13 +177,10 @@
                                 "type": "object",
                                 "properties": {
                                     "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "johndoe@example.com"
+                                        "type": "string"
                                     },
                                     "password": {
-                                        "type": "string",
-                                        "example": "securePassword123"
+                                        "type": "string"
                                     }
                                 },
                                 "required": ["email", "password"]
@@ -103,33 +190,425 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "User logged in successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "token": {
-                                            "type": "string"
-                                        },
-                                        "user": {
-                                            "type": "object",
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string"
-                                                },
-                                                "email": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
+                        "description": "Logged in successfully"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Logout user",
+                "responses": {
+                    "204": {
+                        "description": "Logged out successfully"
+                    }
+                }
+            }
+        },
+        "/api/auth/current": {
+            "get": {
+                "tags": ["Auth"],
+                "summary": "Get current logged-in user",
+                "responses": {
+                    "200": {
+                        "description": "Current user data"
+                    }
+                }
+            }
+        },
+        "/api/auth/send-reset-email": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Send password reset email",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["email"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset email sent"
+                    }
+                }
+            }
+        },
+        "/api/auth/reset-pwd": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Reset password",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["password", "token"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully"
+                    }
+                }
+            }
+        },
+        "/api/auth/google-url": {
+            "get": {
+                "tags": ["Auth"],
+                "summary": "Get Google OAuth URL",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "URL provided"
+                    }
+                }
+            }
+        },
+        "/api/auth/google-confirm": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Confirm Google Auth",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["code"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated successfully"
+                    }
+                }
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": ["Categories"],
+                "summary": "Get list of categories",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "List of categories"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": ["Users"],
+                "summary": "Get all users (travelers)",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "List of users"
+                    }
+                }
+            }
+        },
+        "/api/users/{userId}": {
+            "get": {
+                "tags": ["Users"],
+                "summary": "Get user by ID",
+                "security": [],
+                "parameters": [{
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "User details"
+                    }
+                }
+            }
+        },
+        "/api/users/avatar": {
+            "patch": {
+                "tags": ["Users"],
+                "summary": "Update user avatar",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "avatar": {
+                                        "type": "string",
+                                        "format": "binary"
                                     }
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Invalid credentials"
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Avatar updated"
+                    }
+                }
+            }
+        },
+        "/api/users/current": {
+            "patch": {
+                "tags": ["Users"],
+                "summary": "Update current user profile (name, avatar, description)",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "avatar": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated"
+                    }
+                }
+            }
+        },
+        "/api/stories": {
+            "get": {
+                "tags": ["Stories"],
+                "summary": "Get all stories",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "List of stories"
+                    }
+                }
+            },
+            "post": {
+                "tags": ["Stories"],
+                "summary": "Create a new story",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "article": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "shortDescription": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "storyImage": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": ["title", "category"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Story created"
+                    }
+                }
+            }
+        },
+        "/api/stories/own": {
+            "get": {
+                "tags": ["Stories"],
+                "summary": "Get own stories",
+                "responses": {
+                    "200": {
+                        "description": "List of own stories"
+                    }
+                }
+            }
+        },
+        "/api/stories/saved": {
+            "get": {
+                "tags": ["Stories"],
+                "summary": "Get saved stories",
+                "responses": {
+                    "200": {
+                        "description": "List of saved stories"
+                    }
+                }
+            }
+        },
+        "/api/stories/{storyId}": {
+            "get": {
+                "tags": ["Stories"],
+                "summary": "Get story by ID",
+                "security": [],
+                "parameters": [{
+                    "name": "storyId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Story details"
+                    }
+                }
+            },
+            "patch": {
+                "tags": ["Stories"],
+                "summary": "Update story by ID",
+                "parameters": [{
+                    "name": "storyId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "article": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "shortDescription": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "storyImage": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Story updated"
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["Stories"],
+                "summary": "Delete story by ID",
+                "parameters": [{
+                    "name": "storyId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Story deleted"
+                    }
+                }
+            }
+        },
+        "/api/stories/{storyId}/favorite": {
+            "post": {
+                "tags": ["Stories"],
+                "summary": "Add story to favorites",
+                "parameters": [{
+                    "name": "storyId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Added to favorites"
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["Stories"],
+                "summary": "Remove story from favorites",
+                "parameters": [{
+                    "name": "storyId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Removed from favorites"
                     }
                 }
             }
